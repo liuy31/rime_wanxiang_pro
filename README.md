@@ -366,3 +366,7 @@ __patch:
 如果觉得项目好用，可以请AMZ喝咖啡
 
 <img alt="pay" src="./.github/赞赏.jpeg" height="312" width="446">
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=amzxyz/RIME-LMDG,amzxyz/rime_wanxiang,amzxyz/rime_wanxiang_pro&type=Date)
