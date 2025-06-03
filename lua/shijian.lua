@@ -2129,7 +2129,7 @@ function get_birthday_reminders(custom_settings)
       end
       
       -- 添加到生日列表
-      table.insert(birthday_list, {birthday_info, name .. "公历生日", days_left})
+      table.insert(birthday_list, {birthday_info, "(公历生日)", days_left})
   end
   
   -- 计算农历生日倒计时
@@ -2185,7 +2185,7 @@ function get_birthday_reminders(custom_settings)
     end
     
     -- 添加到生日列表
-    table.insert(birthday_list, {birthday_info, name .. "农历生日", days_left})
+    table.insert(birthday_list, {birthday_info, "(农历生日)", days_left})
   end
   
   -- 按天数排序
