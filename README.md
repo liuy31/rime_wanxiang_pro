@@ -5,7 +5,7 @@ _自6.0起，请不要克隆和下载仓库，仓库涵盖8种辅助码，除非
 
 
 
-# 万象系列方案——辅助码版(全拼用户移步标准版)
+# 万象系列方案——辅助码版(全拼用户移步标准版) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/amzxyz/rime_wanxiang_pro)
 
 本方案为万象辅助码增强版   [>>万象标准版,支持同文9、14、18键](https://github.com/amzxyz/rime_wanxiang)  
 
