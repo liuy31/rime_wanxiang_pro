@@ -14985,7 +14985,7 @@ sort: by_weight
 罽	jì;sd;sd;sd,sy;ai;wn;yp;ld;sd	298
 伋	jí;rj;rj;rj;xh;oe;jc;we;rj	297
 齑	jī;qj;wj,wl;wa,wj;jd;yl;qf;yd;wa	296
-其	jī;cb;qb,qq;ba,ad,hb;vf;tc;zh;ad;ab	292
+其	jī;cb;qb;ba,ad,hb;vf;tc;zh;ad;ab	292
 殛	jí;da;da;dj;fd;mm;gf;gq;da	291
 漈	jì;du;dx;dj;kf;ef;kf;iw;dx	287
 繋	jì;ix;ix;su;;jf,xi;yi;lm;	283
@@ -26102,7 +26102,6 @@ sort: by_weight
 𢆂	néng;jd;jd;ju,jd;;ln;rp;mh;	1
 𨃳	néng;zb;zb;zn;;rp;pv;kh;	1
 𨶙	něng;mb;mb;mn;;ap;av;uc;	1
-莻	neus;	1
 嗯	ǹg;kx;kx;ke;on;rp;dh;kl;kx	763
 嗯	ńg;kx;kx;ke;on;rp;dh;kl;kx	332
 嗯	ňg;kx;kx;ke;on;rp;dh;kl;kx	1
@@ -28556,7 +28555,7 @@ sort: by_weight
 𪒢	pū;lf;hn;hp,hf;;wo;pi;lf;	1
 𪔿	pū;jy;jy;uw,up;;he;ph;vn;	1
 脯	pú;of;of;of;lh;bb;vn;eg;of	1
-其	qí;cb;qb,qq;ba,ad,hb;vf;tc;zh;ad;ab	911
+其	qí;cb;qb;ba,ad,hb;vf;tc;zh;ad;ab	911
 七	qī;av;av;ag;aa;ju;rq;ag;av	892
 柒	qī;dm;dm;mq;kw;ed,xd;ke;ia;dl	883
 妻	qī;un;an;na,nq;dy;jv;fb;gv;an	869
@@ -51039,6 +51038,7 @@ sort: by_weight
 𫝷	zuò;;gt	1
 呒	ḿ;kw;kw;kw;or;ru;dd;kf;kw	1
 呣	ḿ;km;km;km;oh;ri;dk;kx;km	1
+莻	无;	1
 朰	无;	1
 乲	无;;dv	1
 叾	无;;lk	1
