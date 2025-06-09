@@ -55,8 +55,8 @@ jobs:
           mkdir -p dist
           echo "Packing original cn_dicts..."
           if [ -d "cn_dicts" ]; then
-            zip -r dist/9-cn_dicts.zip cn_dicts
-            echo "Packing completed: dist/9-cn_dicts.zip"
+            zip -r dist/8-cn_dicts.zip cn_dicts
+            echo "Packing completed: dist/8-cn_dicts.zip"
           else
             echo "Error: cn_dicts folder does not exist."
             exit 1
