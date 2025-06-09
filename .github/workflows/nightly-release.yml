@@ -73,10 +73,9 @@ jobs:
             ["flypy_dicts"]="2-flypy_dicts.zip"
             ["zrm_dicts"]="3-zrm_dicts.zip"
             ["jdh_dicts"]="4-jdh_dicts.zip"
-            ["cj_dicts"]="5-cj_dicts.zip"
-            ["tiger_dicts"]="6-tiger_dicts.zip"
-            ["wubi_dicts"]="7-wubi_dicts.zip"
-            ["hanxin_dicts"]="8-hanxin_dicts.zip"
+            ["tiger_dicts"]="5-tiger_dicts.zip"
+            ["wubi_dicts"]="6-wubi_dicts.zip"
+            ["hanxin_dicts"]="7-hanxin_dicts.zip"
           )
       
           mkdir -p dist
@@ -145,7 +144,6 @@ jobs:
             - **flypy_dicts.zip**：小鹤辅助码
             - **zrm_dicts.zip**：自然码辅助码
             - **jdh_dicts.zip**：简单鹤辅助码
-            - **cj_dicts.zip**：仓颉辅助码
             - **tiger_dicts.zip**：虎码辅助码
             - **wubi_dicts.zip**：五笔辅助码
             - **hanxin_dicts.zip**：汉心辅助码
@@ -156,10 +154,9 @@ jobs:
             dist/2-flypy_dicts.zip
             dist/3-zrm_dicts.zip
             dist/4-jdh_dicts.zip
-            dist/5-cj_dicts.zip
-            dist/6-tiger_dicts.zip
-            dist/7-wubi_dicts.zip
-            dist/8-hanxin_dicts.zip
+            dist/5-tiger_dicts.zip
+            dist/6-wubi_dicts.zip
+            dist/7-hanxin_dicts.zip
             wanxiang-lts-zh-hans.gram
           draft: false
           prerelease: false

@@ -104,10 +104,9 @@ if __name__ == "__main__":
         (2, 3, "flypy_dicts"),
         (3, 4, "zrm_dicts"),
         (4, 5, "jdh_dicts"),
-        (5, 6, "cj_dicts"),
-        (6, 7, "tiger_dicts"),
-        (7, 8, "wubi_dicts"),
-        (8, None, "hanxin_dicts")  # 8 到末尾
+        (5, 6, "tiger_dicts"),
+        (6, 7, "wubi_dicts"),
+        (7, None, "hanxin_dicts")  # 7 到末尾
     ]
 
     input_dir = 'cn_dicts'
