@@ -10911,11 +10911,10 @@ sort: by_weight
 𬒔	gèng;uo;uo;uk;tl;mv;dh;uo	1
 暅	gèng;od;oa;oh;vd;of;jn;od	1
 𬒔	gěng;uo;uo;uk;tl;mv;dh;uo	1
-怾	gi;;xb;;;;;	1
-公	gōng;bs;bs;sb,bs;fp;hk;wc;bv	853
 工	gōng;aa;aa;aa;pp;ug;aa;aa	842
+共	gòng;cb;cb;bc,cb;zf;lh;aw;cb	836
+公	gōng;bs;bs;sb,bs;fp;hk;wc;bv	803
 供	gōng;rg;rb;rg;xf;jh;wa;rb	782
-共	gòng;cb;cb;bc,cb;zf;lh;aw;cb	776
 功	gōng;gl;gl;gl,lg;pu;us;al;gl	775
 攻	gōng;gw;gw;gw,wg;pj;uh;at;gw	718
 宫	gōng;bk;bk;bl;io;wd;pk;gk	702
@@ -26438,8 +26437,8 @@ sort: by_weight
 𪈼	niǎo;nn;nn;nn;;xx;wv;	1
 𪉓	niǎo;;nn;;;;;	1
 𫠓	niǎo;;pa;;;;;	1
-涅	niè;dt;dt;dn,dt;kg;kg;ij;dt	584
 捏	niē;ft;ft;fn,ft;jg;ug;rj;ft	576
+涅	niè;dt;dt;dn,dt;kg;kg;ij;dt	570
 聂	niè;ey;ey;eu;dl;qr;bc;ey	536
 镍	niè;jm;jm;jm,jn;dw;ze;qt;jl	504
 孽	niè;cz;cz;cz,zx;za;lh;aw;cz	496
@@ -46672,7 +46671,7 @@ sort: by_weight
 運	yùn;zi;zi;zj;;wu;pl;	447
 赟	yūn;wb;wr;bb;jm;vo;yg;wr	408
 氲	yūn;qm;qm;qm,qw;sa;va;rn;qm	407
-雲	yún;yy;es;yy;;tb;ff;	407
+雲	yún;yy;ys;yy;;tb;ff;	407
 郧	yún;ke;ke;ey;ob;dt;km;ke	397
 殒	yǔn;db;dr;dy;fm;go;gq;dr	396
 恽	yùn;xi;xi;xj;nt;hy;np;xi	382
@@ -46726,7 +46725,7 @@ sort: by_weight
 惲	yùn;xi;xi;xj;;hy;np;	82
 縕	yùn;sm;ym;sm,sw;;ia;xl;	82
 馧	yūn;hm;hm;xw;ua;xa;tj;hm	75
-霣	yǔn;yb;eb;yy;;to;fk;	75
+霣	yǔn;yb;yb;yy;;to;fk;	75
 秐	yún;hy;hs;hy;;xb;tf;	68
 腪	yùn;oi;oi;oj;;vy;ep;	68
 抎	yǔn;fy;fs;fy;;ub;rf;	60
@@ -51038,6 +51037,7 @@ sort: by_weight
 𫝷	zuò;;gt;;;;;	1
 呒	ḿ;kw;kw;kw;or;dd;kf;kw	1
 呣	ḿ;km;km;km;oh;dk;kx;km	1
+怾	无;;xb;;;;;	1
 莻	无;	1
 朰	无;	1
 乲	无;;dv;;;;;	1
