@@ -129,7 +129,12 @@ jobs:
       - name: Wait for cleanup
         if: env.SKIP != 'true'
         run: sleep 10
-
+      # 安装 Node.js v18（为 action-gh-release 解决 node:fs::FileHandle 问题）
+      - name: Setup Node.js 18
+        if: env.SKIP != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
       # 10. 创建新的 Release，并把上述打包好的所有文件都上传
       - name: Create new Release
         if: env.SKIP != 'true'
