@@ -45,7 +45,7 @@ global_ascii: false                        # 切换为 ascii 模式时，是否�
 # [style]
 # 字体；候选项、候选窗口的行为、布局及样式
 style:
-  color_scheme: wechat      # 默认配色方案
+  color_scheme: win11_light      # 默认配色方案
 
   # 全局字体
   # 格式：字体1:起始码位:结束码位:字重:字形,字体2……，字体会依次 fallback
@@ -156,7 +156,6 @@ preset_color_schemes:
     candidate_text_color: 0x000000
     comment_text_color: 0x999999
     hilited_candidate_text_color: 0xffffff
-    hilited_comment_text_color: 0xdddddd
     hilited_comment_text_color: 0xdddddd
     hilited_candidate_back_color: 16740656
     hilited_label_color: 0xffffff
