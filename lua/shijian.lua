@@ -1292,7 +1292,7 @@ end
 local function Analyze(Data)
     local rtn1, rtn2, rtn3, rtn4
     rtn1 = system(string.sub(Data, 1, 3), 16, 2)
-    if string.len(rtn1) < 12 then
+    while string.len(rtn1) < 12 do
         rtn1 = "0" .. rtn1
     end
     rtn2 = string.sub(Data, 4, 4)
@@ -2249,7 +2249,7 @@ local function translator(input, seg, env)
     -- **N日期**
     if string.sub(input, 1, 1) == "N" then
         local n = string.sub(input, 2)
-        if tonumber(n) ~= nil and (string.match(n, "^(20)%d%d+$") ~= nil or string.match(n, "^(19)%d%d+$") ~= nil) then
+        if not (string.match(n, "^(20)%d%d+$") == nil and string.match(n, "^(19)%d%d+$") == nil) then
             local lunar = QueryLunarInfo(n)
             if #lunar > 0 then
                 for i = 1, #lunar do
@@ -2358,7 +2358,8 @@ local function translator(input, seg, env)
         return
     end
 
-    if (command == "rs") then -- **日期+时间**
+    -- **日期+时间**
+    if (command == "rs") then
         local current_time = os.time()
         local time_variants = {{os.date('%Y-%m-%d %H:%M:%S', current_time), "年-月-日 时:分:秒"},
                                {os.date('%Y-%m-%dT%H:%M:%S+08:00', current_time), "年-月-日T时:分:秒+时区"},
@@ -2460,7 +2461,7 @@ local function translator(input, seg, env)
         return
     end
 
-    -- 日历信息整合处理 `/day`
+    -- **日历信息整合处理**
     if (command == "day") then
         -- 获取当前时间
         local now = os.time()
