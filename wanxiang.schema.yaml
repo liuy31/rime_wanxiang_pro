@@ -395,7 +395,22 @@ key_binder:
     - { match: "^.*`$", accept: "`", send_sequence: '{BackSpace}{Home}{`}{`}{End}' }
 #通过按下/发送/+1节约一个按键，不冲突的时候可以开启
     #- { match: "[a-z]{1,4}", accept: "/",  send_sequence: "/1" }
-
+#① 翻页 , .
+    # - { when: paging, accept: comma, send: Page_Up }
+    # - { when: has_menu, accept: period, send: Page_Down }
+#② 翻页 [ ]
+    # - { when: paging, accept: bracketleft, send: Page_Up }
+    # - { when: has_menu, accept: bracketright, send: Page_Down }
+#③ 翻页 - =
+    - { when: has_menu, accept: minus, send: Page_Up }
+    - { when: has_menu, accept: equal, send: Page_Down }
+# Option/Alt + ←/→ 切换光标至下/上一个拼音
+    - { when: composing, accept: Alt+Left, send: Shift+Left }
+    - { when: composing, accept: Alt+Right, send: Shift+Right }
+    - { when: always, toggle: ascii_punct, accept: Control+Shift+3 }              # 切换中英标点
+    - { when: always, toggle: ascii_punct, accept: Control+Shift+numbersign }     # 切换中英标点
+    - { when: always, toggle: s2t, accept: Control+Shift+4 }       # 切换简繁
+    - { when: always, toggle: s2t, accept: Control+Shift+dollar }  # 切换简繁
 editor:
    bindings:
      space: confirm                        # 空格键：上屏候选项

@@ -145,13 +145,13 @@ jobs:
           name: "每夜构建-词库更新"
           body: |
             - **cn_dicts.zip**：最新的全辅助码原始中文词库文件
-            - **moqi_dicts.zip**：墨奇辅助码
-            - **flypy_dicts.zip**：小鹤辅助码
-            - **zrm_dicts.zip**：自然码辅助码
-            - **jdh_dicts.zip**：简单鹤辅助码
-            - **tiger_dicts.zip**：虎码辅助码
-            - **wubi_dicts.zip**：五笔辅助码
-            - **hanxin_dicts.zip**：汉心辅助码
+            - **moqi_dicts.zip**：携带了墨奇辅助码的词库文件
+            - **flypy_dicts.zip**：携带了小鹤辅助码的词库文件
+            - **zrm_dicts.zip**：携带了自然码辅助码的词库文件
+            - **jdh_dicts.zip**：携带了简单鹤辅助码的词库文件
+            - **tiger_dicts.zip**：携带了虎码辅助码的词库文件
+            - **wubi_dicts.zip**：携带了五笔辅助码的词库文件
+            - **hanxin_dicts.zip**：携带了汉心辅助码的词库文件
             - **[wanxiang-lts-zh-hans.gram](https://github.com/amzxyz/RIME-LMDG/releases/download/LTS/wanxiang-lts-zh-hans.gram)**：与词库同步更新的语法模型
           files: |
             dist/8-cn_dicts.zip

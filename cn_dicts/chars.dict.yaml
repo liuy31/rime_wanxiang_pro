@@ -22143,6 +22143,7 @@ sort: by_weight
 岭	lǐng;us;es;ul;pp;vk;mw;sv	622
 铃	líng;js;js;jl;dp;zk;qw;jv	617
 玲	líng;ws;ws;wl;ap;nk;gw;wv	608
+〇	líng;vv;vv;aa;oo;dk;ll;yy	600
 菱	líng;cw;cw;cl,cw;zj;lh;af;cw	568
 聆	líng;es;es;el;dp;qk;bw;ev	529
 苓	líng;cs;cs;cl;zp;lk;aw;cv	517
@@ -22221,7 +22222,6 @@ sort: by_weight
 袊	lǐng;ps;ps;yl;;tk;pu;	23
 鹷	líng;vs;ls;ll;;yk;hl;	23
 刢	líng;rd;rd;dl;;jp;wy;	23
-〇	líng;vv;vv;aa;oo;dk;ll;yy	1
 𫐉	líng;;is;;;;;	1
 𨱋	líng;;jw;;;;;	1
 𫠂	líng;;ms;;;;;	1
@@ -36942,9 +36942,10 @@ sort: by_weight
 𩠹	tuán;vz;yz;ud;;io;xx;	1
 𪈋	tuán;wn;wn;wn,nw;;gx;yk;	1
 𪏖	tuān;ce;ce,ne;he;;nl;am;	1
-推	tuī;fv;ff;fv;ja;uu;rw;fa	800
-退	tuì;zg;zg;zg;rq;iu;ve;zh	718
+退	tuì;zg;zg;zg;rq;iu;ve;zh	800
+推	tuī;fv;ff;fv;ja;uu;rw;fa	718
 腿	tuǐ;og;oz;ot;lq;vu;ev;oh	686
+忒	tuī;yx;yx;xy,yx;ha;ph;an;xg	522
 颓	tuí;hy;hr;yt;um;xw;tm;hr	510
 蜕	tuì;ix;ie;id;fk;cp;ju;ie	504
 褪	tuì;pg;pz;yt;hq;tu;pu;ph	503
@@ -36963,7 +36964,6 @@ sort: by_weight
 頺	tuí;hy;hb;yx;;xw;te;	105
 侻	tuì;rx;re;rd;;jp;wu;	101
 娧	tuì;nx;ne;nd;;bp;vu;	92
-忒	tuī;yx;yx;xy,yx;ha;ph;an;xg	92
 骽	tuǐ;gn;gn;gt;;fb;me;	82
 駾	tuì;mx;me;md;;np;cu;	60
 蘈	tuí;cy;cb;ct;;lw;at;	60
