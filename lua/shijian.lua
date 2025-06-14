@@ -2153,13 +2153,14 @@ function get_birthday_reminders(custom_settings)
         -- 构建生日信息
         local birthday_info
         if note and note ~= "" then
-            birthday_info = string.format("%s(%s): %s < %d 天", name, note, formatted_date, days_left)
+            birthday_info = string.format("%s(%s): %s", name, note, formatted_date)
         else
-            birthday_info = string.format("%s: %s < %d 天", name, formatted_date, days_left)
+            birthday_info = string.format("%s: %s", name, formatted_date)
         end
 
         -- 添加到生日列表
-        table.insert(birthday_list, {birthday_info, "(公历生日)", days_left})
+        table.insert(birthday_list,
+            {birthday_info, string.format("〔< %d 天 (公历生日)〕", days_left), days_left})
     end
 
     -- 计算农历生日倒计时
@@ -2209,14 +2210,14 @@ function get_birthday_reminders(custom_settings)
         -- 构建农历生日信息
         local birthday_info
         if note and note ~= "" then
-            birthday_info = string.format("%s(%s): %s(%s) < %d 天", name, note, formatted_lunar, formatted_solar,
-                days_left)
+            birthday_info = string.format("%s(%s): %s(%s)", name, note, formatted_lunar, formatted_solar)
         else
-            birthday_info = string.format("%s: %s(%s) < %d 天", name, formatted_lunar, formatted_solar, days_left)
+            birthday_info = string.format("%s: %s(%s)", name, formatted_lunar, formatted_solar)
         end
 
         -- 添加到生日列表
-        table.insert(birthday_list, {birthday_info, "(农历生日)", days_left})
+        table.insert(birthday_list,
+            {birthday_info, string.format("〔 < %d 天 (农历生日)〕", days_left), days_left})
     end
 
     -- 按天数排序
@@ -2287,7 +2288,7 @@ local function translator(input, seg, env)
 
     -- **日期候选项**
     if (command == "rq") then
-        local num_year = os.date("%j/") .. IsLeap(os.date("%Y"))
+        local num_year = "〔" .. os.date("%j/") .. IsLeap(os.date("%Y")) .. "〕"
         local date_variants = {{os.date("%Y-%m-%d"), num_year}, {os.date("%Y/%m/%d"), num_year},
                                {os.date("%Y.%m.%d"), num_year}, {os.date("%Y年%m月%d日"), num_year},
                                {string.gsub(os.date("%m/%d/%Y"), "([^%d])0+", "%1"), num_year},
@@ -2300,7 +2301,7 @@ local function translator(input, seg, env)
 
     -- **时间候选项**
     if (command == "sj" or command == "uj") then
-        local time_discrpt = GetLunarSichen(os.date("%H"), 1)
+        local time_discrpt = "〔" .. GetLunarSichen(os.date("%H"), 1) .. "〕"
         local time_variants = {{os.date("%H:%M"), time_discrpt}, {format_Time() .. os.date("%I:%M"), time_discrpt},
                                {os.date("%H:%M:%S"), time_discrpt},
                                {string.gsub(os.date("%H点%M分%S秒"), "^0", ""), time_discrpt}}
@@ -2311,7 +2312,7 @@ local function translator(input, seg, env)
     -- **农历候选项**
     if (command == "nl") then
         local lunar_variants = {{Date2LunarDate(os.date("%Y%m%d")) .. JQtest(os.date("%Y%m%d")), ""},
-                                {lunarJzl(os.date("%Y%m%d%H")), " "},
+                                {lunarJzl(os.date("%Y%m%d%H")), ""},
                                 {Date2LunarDate(os.date("%Y%m%d")) .. GetLunarSichen(os.date("%H"), 1), ""}}
         generate_candidates("date", seg, lunar_variants)
         return
@@ -2320,7 +2321,7 @@ local function translator(input, seg, env)
     if (command == "xq") then
         local now = os.date("*t")
         local _, weekno = iso_week_number(now.year, now.month, now.day)
-        local num_weekday = "(第" .. weekno .. "周)"
+        local num_weekday = "〔第 " .. weekno .. " 周〕"
 
         local week_variants = {{chinese_weekday(os.date("%w")), num_weekday},
                                {chinese_weekday2(os.date("%w")), num_weekday}}
@@ -2353,7 +2354,7 @@ local function translator(input, seg, env)
     -- **时间戳**
     if (command == "tt") then
         local current_time = os.time()
-        local timestamp_variants = {{string.format('%d', current_time), "(时间戳)"}}
+        local timestamp_variants = {{string.format('%d', current_time), "〔时间戳〕"}}
         generate_candidates("time", seg, timestamp_variants)
         return
     end
@@ -2361,9 +2362,9 @@ local function translator(input, seg, env)
     -- **日期+时间**
     if (command == "rs") then
         local current_time = os.time()
-        local time_variants = {{os.date('%Y-%m-%d %H:%M:%S', current_time), "年-月-日 时:分:秒"},
-                               {os.date('%Y-%m-%dT%H:%M:%S+08:00', current_time), "年-月-日T时:分:秒+时区"},
-                               {os.date('%Y%m%d%H%M%S', current_time), "年月日时分秒"}}
+        local time_variants = {{os.date('%Y-%m-%d %H:%M:%S', current_time), "〔年-月-日 时:分:秒〕"},
+                               {os.date('%Y-%m-%dT%H:%M:%S+08:00', current_time), "〔年-月-日T时:分:秒+时区〕"},
+                               {os.date('%Y%m%d%H%M%S', current_time), "〔年月日时分秒〕"}}
         generate_candidates("time", seg, time_variants)
         return
     end
@@ -2381,7 +2382,7 @@ local function translator(input, seg, env)
                 local formatted_date = string.format("%02d月%02d日", tonumber(month), tonumber(day))
                 -- 输出格式：节日名称（格式化后的公历日期） 还有多少天
                 local holiday_summary = string.format("%s (%s)", holiday[1], formatted_date, holiday[3])
-                local holiday_diff = string.format("< %d 天", holiday[3]) -- 差值显示到注释里面
+                local holiday_diff = string.format("〔< %d 天〕", holiday[3]) -- 差值显示到注释里面
                 -- 将节日信息加入候选项列表
                 table.insert(candidates, {holiday_summary, holiday_diff})
             end
