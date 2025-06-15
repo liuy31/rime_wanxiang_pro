@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'cn_dicts/**'
 
 concurrency: # 防止并发冲突
   group: nightly-release
