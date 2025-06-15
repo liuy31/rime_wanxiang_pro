@@ -1,10 +1,10 @@
---万象家族lua,超级提示,表情\化学式\方程式\简码等等直接上屏,不占用候选位置
---采用leveldb数据库,支持大数据遍历,支持多种类型混合,多种拼音编码混合,维护简单
---支持候选匹配和编码匹配两种
---https://github.com/amzxyz/rime_wanxiang_pro
---https://github.com/amzxyz/rime_wanxiang
+-- 万象家族lua,超级提示,表情\化学式\方程式\简码等等直接上屏,不占用候选位置
+-- 采用leveldb数据库,支持大数据遍历,支持多种类型混合,多种拼音编码混合,维护简单
+-- 支持候选匹配和编码匹配两种
+-- https://github.com/amzxyz/rime_wanxiang_pro
+-- https://github.com/amzxyz/rime_wanxiang
 --     - lua_processor@*super_tips*S              手机电脑有着不同的逻辑,除了编码匹配之外,电脑支持光标高亮匹配检索,手机只支持首选候选匹配
---     - lua_filter@*super_tips*M
+--     - lua_filter@*super_tips*M                  
 --     key_binder/tips_key: "slash"  #上屏按键配置
 local is_mobile_device = require("wanxiang")
 local _db_pool = _db_pool or {} -- 数据库池
@@ -12,14 +12,25 @@ local _db_pool = _db_pool or {} -- 数据库池
 local function wrapLevelDb(dbname, mode)
     _db_pool[dbname] = _db_pool[dbname] or LevelDb(dbname)
     local db = _db_pool[dbname]
-    if db and not db:loaded() then
+
+    local function close()
+        if db:loaded() then
+            collectgarbage()
+            db:close()
+        end
+    end
+
+    if db then
         if mode then
-            db:open()           -- 读写模式
-        else
+            close()
+            db:open()
+        elseif not db:loaded() then
+            -- 读写模式需要 lock 数据
             db:open_read_only() -- 只读模式
         end
     end
-    return db
+
+    return db, close
 end
 
 local M = {}
@@ -47,7 +58,24 @@ function M.init(env)
         ensure_dir_exist(user_lua_dir .. "/tips")
     end
 
-    local db = wrapLevelDb('lua/tips', true)
+    local db, close_db = wrapLevelDb('lua/tips', true)
+    local da = db:query("")
+    local count_before = 0
+    for key, value in da:iter() do
+        db:erase(key)
+        count_before = count_before + 1
+    end
+    da = nil
+
+    -- -- local db = wrapLevelDb('lua/tips', true)
+    -- local count_after = 0
+    -- local da2 = db:query("")
+    -- for key, value in da2:iter() do
+    --     count_after = count_after + 1
+    -- end
+    -- da2 = nil
+    -- log.error(string.format("[super_tips] %d -> %d, state: read_only: %s", count_before, count_after, db.read_only))
+
     local user_path = rime_api.get_user_data_dir() .. "/lua/tips/tips_show.txt"
     local shared_path = rime_api.get_shared_data_dir() .. "/lua/tips/tips_show.txt"
     local path = nil
@@ -64,13 +92,13 @@ function M.init(env)
         end
     end
     if not path then
-        db:close()
+        close_db()
         return
     end
 
     local file = io.open(path, "r")
     if not file then
-        db:close()
+        close_db()
         return
     end
     for line in file:lines() do
@@ -98,8 +126,7 @@ function M.init(env)
         override_file:close()
     end
 
-    collectgarbage()
-    db:close()
+    close_db()
 end
 
 -- 滤镜：设置提示内容
@@ -108,7 +135,9 @@ function M.func(input, env)
     if not segment then
         return 2
     end
-    env.settings = { super_tips = env.engine.context:get_option("super_tips") } or true
+    env.settings = {
+        super_tips = env.engine.context:get_option("super_tips")
+    } or true
     local is_super_tips = env.settings.super_tips
     local db = wrapLevelDb("lua/tips", false)
     -- 手机设备：读取数据库并输出候选
@@ -119,7 +148,9 @@ function M.func(input, env)
         -- 收集候选
         local first_cand, candidates = nil, {}
         for cand in input:iter() do
-            if not first_cand then first_cand = cand end
+            if not first_cand then
+                first_cand = cand
+            end
             table.insert(candidates, cand)
         end
         local first_cand_match = first_cand and db:fetch(first_cand.text)
@@ -153,7 +184,6 @@ function S.init(env)
     S.tips_key = config:get_string("key_binder/tips_key")
     local db = wrapLevelDb("lua/tips", false)
 end
-
 function S.func(key, env)
     local context = env.engine.context
     local segment = context.composition:back()
@@ -165,7 +195,9 @@ function S.func(key, env)
         return 2
     end
     local db = wrapLevelDb("lua/tips", false)
-    env.settings = { super_tips = context:get_option("super_tips") }
+    env.settings = {
+        super_tips = context:get_option("super_tips")
+    }
     local is_super_tips = env.settings.super_tips
     local tipspc
     local tipsph
@@ -189,15 +221,13 @@ function S.func(key, env)
         tipsph = segment.prompt
     end
     -- 检查是否触发提示上屏
-    if (context:is_composing() or context:has_menu())
-        and S.tips_key
-        and is_super_tips
-        and ((tipspc and tipspc ~= "") or (tipsph and tipsph ~= "")) then
+    if (context:is_composing() or context:has_menu()) and S.tips_key and is_super_tips and
+        ((tipspc and tipspc ~= "") or (tipsph and tipsph ~= "")) then
         local trigger = key:repr() == S.tips_key
         local text = selected_cand and selected_cand.text or input_text
         if trigger then
             local formatted = (tipspc and (tipspc:match(".+：(.*)") or tipspc:match(".+:(.*)") or tips)) or
-            (tipsph and (tipsph:match("〔.+：(.*)〕") or tipsph:match("〔.+:(.*)〕"))) or ""
+                                  (tipsph and (tipsph:match("〔.+：(.*)〕") or tipsph:match("〔.+:(.*)〕"))) or ""
             env.engine:commit_text(formatted)
             context:clear()
             return 1
@@ -205,5 +235,7 @@ function S.func(key, env)
     end
     return 2
 end
-
-return { M = M, S = S }
+return {
+    M = M,
+    S = S
+}
