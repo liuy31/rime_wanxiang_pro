@@ -1,4 +1,6 @@
--- 手动维护的操作系统检测模式表
+local rime = require('lib')
+
+-- 检查系统类型
 -- 各类 rime 前端详见：https://rime.im/download/
 -- 输入法           code_name   OS
 -- 小狼毫           Weasel      Windows
@@ -9,44 +11,44 @@
 -- fcitx5-macos     fcitx-rime  macOS
 -- Fcitx5           fcitx-rime  Linux
 -- fcitx5-android   fcitx-rime  Android
-local os_detection_patterns = {
-    windows = { "weasel", "Weasel" },       -- Windows 的标识符列表
-    linux = { "fcitx%-rime", "ibus-rime" }, -- Linux 的标识符
-    macos = { "squirrel", "Squirrel" },     -- macOS 的标识符
-    android = { "trime" }                   -- android 的标识符
-}
+local function detect_os_type()
+    -- 先判断 Windows，因为只有 Windows 的路径分隔符为 \
+    if package.config:sub(1, 1) == '\\' then return 'windows' end
 
--- 检查系统类型
-local function detect_os_type(env)
-    local os_type = "unknown"
-    local dist_name = rime_api.get_distribution_code_name()
+    local dist_name = rime.api.get_distribution_code_name()
+    if not dist_name then return "unknown" end
 
-    if not dist_name then
-        return os_type
-    end
+    if dist_name == 'Hamster' then return 'ios' end
+    if dist_name == 'Squirrel' then return 'macos' end
+    if dist_name == 'trime' then return 'android' end
+    if dist_name == 'ibus-rime' then return 'linux' end
 
-    -- 遍历 os_detection_patterns 表来匹配系统类型
-    for os, patterns in pairs(os_detection_patterns) do
-        for _, pattern in ipairs(patterns) do
-            if dist_name:match(pattern) then
-                os_type = os
-                break
+    if dist_name == 'fcitx-rime' then
+        local user_data_dir = rime.api.get_user_data_dir()
+        if user_data_dir:match("^/org%.fcitx%.fcitx5%.android/$") then
+            return "android"
+        end
+
+        local popen_status, popen_result = pcall(io.popen, "")
+        if popen_status and popen_result then
+            popen_result:close()
+            local raw_os_name = io.popen('uname -s', 'r'):read('*l')
+            raw_os_name = (raw_os_name):lower()
+
+            local kernel_patterns = {
+                ['linux'] = 'linux',
+                ['mac'] = 'macos',
+                ['darwin'] = 'macos',
+            }
+            for pattern, name in pairs(kernel_patterns) do
+                if raw_os_name:match(pattern) then
+                    return name
+                end
             end
         end
-        if os_type ~= "unknown" then
-            break
-        end
     end
 
-    -- android 使用 fcitx5-android 输入法会误识别为 linux，这里额外处理一下
-    if os_type == "linux" then
-        local user_data_dir = rime_api.get_user_data_dir()
-        if user_data_dir:match("^/org%.fcitx%.fcitx5%.android/$") then
-            os_type = "android"
-        end
-    end
-
-    return os_type
+    return 'unknown'
 end
 
 -- 解析 installation.yaml 文件
@@ -56,7 +58,7 @@ local function detect_yaml_installation()
     end
 
     local yaml = {}
-    local user_data_dir = rime_api.get_user_data_dir()
+    local user_data_dir = rime.api.get_user_data_dir()
     local yaml_path = user_data_dir .. "/installation.yaml"
     local file, err = io.open(yaml_path, "r")
     if not file then
@@ -89,7 +91,7 @@ local function init(env)
     if not env.initialized then
         env.initialized = true
         env.yaml_installation = detect_yaml_installation() -- 解析 installation.yaml 文件，获取配置信息
-        env.os_type = detect_os_type(env)                  -- 全局变量，存储系统类型
+        env.os_type = detect_os_type()                     -- 全局变量，存储系统类型
         env.total_deleted = 0                              -- 记录删除的总条目数
     end
 end
@@ -107,7 +109,7 @@ end
 local function get_sync_path_from_yaml(env)
     local sync_dir = env.yaml_installation["sync_dir"]
     if not sync_dir then
-        local user_data_dir = rime_api.get_user_data_dir()
+        local user_data_dir = rime.api.get_user_data_dir()
         sync_dir = user_data_dir .. "/sync"
     end
 
@@ -202,8 +204,8 @@ end
 
 -- 删除 installation.yaml 同级目录下的 .userdb 文件夹
 local function process_userdb_folders(env)
-    local user_data_dir = rime_api.get_user_data_dir()
-    local dirs, err = list_dirs(user_data_dir, env.os_type)
+    local user_data_dir = rime.api.get_user_data_dir()
+    local dirs, _ = list_dirs(user_data_dir, env.os_type)
 
     if not dirs then
         return
@@ -216,18 +218,19 @@ local function process_userdb_folders(env)
             table.insert(rm_dirs, dir)
         end
     end
+
+    local cmd = string.format('rm -rf %s', table.concat(rm_dirs, " "))
     if env.os_type == "windows" then
+        cmd = string.format('start /B cmd /c rmdir /S /Q %s', table.concat(rm_dirs, " "))
         -- 多个文件夹同时删除
-        os.execute('start /B cmd /c rmdir /S /Q "' .. table.concat(rm_dirs, " ") .. '"')
         -- local win_command = require("win_command")
         -- win_command.async_execute('rmdir /S /Q "' .. table.concat(rm_dirs, " ") .. '"',
         --     function()
         --         print("执行异步删除回调")
         --     end
         -- )
-    else
-        os.execute('rm -rf "' .. table.concat(rm_dirs, " ") .. '"')
     end
+    os.execute(cmd)
 end
 
 
