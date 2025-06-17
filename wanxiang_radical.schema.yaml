@@ -2,7 +2,7 @@
 # encoding: utf-8
 ###############选择与之匹配的拼音方案#####################
 set_shuru_schema:
-  __include: 自然码    #可选的选项有（自然码, 小鹤双拼, 微软双拼, 搜狗双拼, 智能ABC, 紫光双拼）
+  __include: 自然码    #可选的选项有（自然码, 小鹤双拼, 微软双拼, 搜狗双拼, 智能ABC, 紫光双拼, 拼音加加）
 
 ######################################################
 schema:
@@ -262,4 +262,40 @@ translator:
   - xform/un(?=^|$|')/<m>/
   - xform/ao(?=^|$|')/<q>/
   - xform/an(?=^|$|')/<r>/
+  - xform/'|<|>//
+拼音加加:
+  - derive/^([jqxy])u(?=^|$|')/$1v/
+  - derive/'([jqxy])u(?=^|$|')/'$1v/
+  - derive/^([aoe])([ioun])(?=^|$|')/$1$1$2/
+  - derive/'([aoe])([ioun])(?=^|$|')/'$1$1$2/
+  - xform/^([aoe])(ng)?(?=^|$|')/$1$1$2/
+  - xform/'([aoe])(ng)?(?=^|$|')/'$1$1$2/
+  - xform/iu(?=^|$|')/<n>/
+  - xform/[iu]a(?=^|$|')/<b>/Add commentMore actions
+  - xform/[uv]an(?=^|$|')/<c>/
+  - xform/[uv]e(?=^|$|')/<x>/
+  - xform/ing(?=^|$|')|er(?=^|$|')/<q>/
+  - xform/^sh/<i>/
+  - xform/^ch/<u>/
+  - xform/^zh/<v>/
+  - xform/'sh/'<i>/
+  - xform/'ch/'<u>/
+  - xform/'zh/'<v>/
+  - xform/uo(?=^|$|')/<o>/
+  - xform/[uv]n(?=^|$|')/<z>/
+  - xform/([a-z>])i?ong(?=^|$|')/$1<y>/
+  - xform/[iu]ang(?=^|$|')/<h>/
+  - xform/([a-z>])en(?=^|$|')/$1<r>/
+  - xform/([a-z>])eng(?=^|$|')/$1<t>/
+  - xform/([a-z>])ang(?=^|$|')/$1<g>/
+  - xform/ian(?=^|$|')/<j>/
+  - xform/([a-z>])an(?=^|$|')/$1<f>/
+  - xform/iao(?=^|$|')/<k>/
+  - xform/([a-z>])ao(?=^|$|')/$1<d>/
+  - xform/([a-z>])ai(?=^|$|')/$1<s>/
+  - xform/([a-z>])ei(?=^|$|')/$1<w>/
+  - xform/ie(?=^|$|')/<m>/
+  - xform/ui(?=^|$|')/<v>/
+  - xform/([a-z>])ou(?=^|$|')/$1<p>/
+  - xform/in(?=^|$|')/<l>/
   - xform/'|<|>//
