@@ -32,17 +32,20 @@ local function detect_os_type()
         local popen_status, popen_result = pcall(io.popen, "")
         if popen_status and popen_result then
             popen_result:close()
-            local raw_os_name = io.popen('uname -s', 'r'):read('*l')
-            raw_os_name = (raw_os_name):lower()
+            local uname = io.popen('uname -s', 'r')
+            if uname then
+                local raw_os_name = uname:read('*l'):lower()
+                uname:close()
 
-            local kernel_patterns = {
-                ['linux'] = 'linux',
-                ['mac'] = 'macos',
-                ['darwin'] = 'macos',
-            }
-            for pattern, name in pairs(kernel_patterns) do
-                if raw_os_name:match(pattern) then
-                    return name
+                local kernel_patterns = {
+                    ['linux'] = 'linux',
+                    ['mac'] = 'macos',
+                    ['darwin'] = 'macos',
+                }
+                for pattern, name in pairs(kernel_patterns) do
+                    if raw_os_name:match(pattern) then
+                        return name
+                    end
                 end
             end
         end
@@ -222,13 +225,6 @@ local function process_userdb_folders(env)
     local cmd = string.format('rm -rf %s', table.concat(rm_dirs, " "))
     if env.os_type == "windows" then
         cmd = string.format('start /B cmd /c rmdir /S /Q %s', table.concat(rm_dirs, " "))
-        -- 多个文件夹同时删除
-        -- local win_command = require("win_command")
-        -- win_command.async_execute('rmdir /S /Q "' .. table.concat(rm_dirs, " ") .. '"',
-        --     function()
-        --         print("执行异步删除回调")
-        --     end
-        -- )
     end
     os.execute(cmd)
 end
@@ -255,88 +251,49 @@ end
 
 -- 处理 .userdb.txt 文件并删除 c < 0 条目的函数
 local function clean_userdb_file(file_path, env)
-    local file, err = io.open(file_path, "r")
-    if not file then
+    local file, _ = io.open(file_path, "r")
+    if not file then return end
+
+    local temp_file_path = file_path .. ".tmp"
+    local temp_file, _ = io.open(temp_file_path, "w")
+    if not temp_file then
+        file:close()
         return
     end
 
-    local content = {}
-    -- 直接读取所有行到内存
-    local buffer = ""
     local delete_count = 0
-
     for line in file:lines() do
         local c_str = line:match("c=(%-?%d+)")
         if c_str and tonumber(c_str) <= 0 then
             delete_count = delete_count + 1
         else
-            buffer = buffer .. '\n' .. line
+            temp_file:write(line, "\n")
         end
     end
+
     file:close()
+    temp_file:close()
 
     -- 仅当有删除时才写入文件
     if delete_count > 0 then
-        local temp_file = io.open(file_path .. ".tmp", "w")
-        if temp_file then
-            -- 批量写入优化
-            temp_file:write(buffer)
-            temp_file:close()
-
-            -- 原子替换文件
-            os.remove(file_path)
-            os.rename(file_path .. ".tmp", file_path)
-
-            -- 更新计数器
-            env.total_deleted = env.total_deleted + delete_count
-        end
+        -- 原子替换文件
+        os.remove(file_path)
+        os.rename(temp_file_path, file_path)
+        -- 更新计数器
+        env.total_deleted = env.total_deleted + delete_count
+    else
+        os.remove(temp_file_path)
     end
-
-    -- local temp_file_path = file_path .. ".tmp"
-    -- local temp_file = io.open(temp_file_path, "w")
-    -- if not temp_file then
-    --     file:close()
-    --     return
-    -- end
-
-    -- local entries_deleted = false
-    -- local delete_count = 0
-    -- for line in file:lines() do
-    --     local c_value = line:match("c=(%-?%d+)")
-    --     if c_value then
-    --         c_value = tonumber(c_value)
-    --         if c_value > 0 then
-    --             temp_file:write(line .. "\n")
-    --         else
-    --             entries_deleted = true
-    --             delete_count = delete_count + 1
-    --         end
-    --     else
-    --         temp_file:write(line .. "\n")
-    --     end
-    -- end
-
-    -- file:close()
-    -- temp_file:close()
-
-    -- if entries_deleted then
-    --     os.remove(file_path)
-    --     os.rename(temp_file_path, file_path)
-    --     -- 更新总删除计数
-    --     env.total_deleted = env.total_deleted + delete_count
-    -- else
-    --     os.remove(temp_file_path)
-    -- end
 end
 
 -- 处理 .userdb.txt 文件并删除 c <= 0 条目
 local function process_userdb_files(env)
-    local sync_path, err = get_sync_path_from_yaml(env)
+    local sync_path, _ = get_sync_path_from_yaml(env)
     if not sync_path then
         return
     end
 
-    local files, err = list_files(sync_path, env.os_type)
+    local files, _ = list_files(sync_path, env.os_type)
     if not files then
         return
     end
@@ -350,33 +307,24 @@ end
 
 -- 触发清理操作
 local function trigger_sync_cleanup(env)
-    local co1 = coroutine.create(function() process_userdb_files(env) end)
-    local co2 = coroutine.create(function() process_userdb_folders(env) end)
-    coroutine.resume(co1)
-    coroutine.resume(co2)
-
-    -- 查找 .userdb.txt 文件，删除 c <= 0 条目
-    -- process_userdb_files(env)
-
-    -- 查找 .userdb 文件夹，删除
-    -- process_userdb_folders(env)
+    process_userdb_files(env)
+    process_userdb_folders(env)
 end
 
 -- 捕获输入并执行相应的操作
 local function UserDictCleaner_process(key_event, env)
-    local engine = env.engine
-    local context = engine.context
+    local context = env.engine.context
     local input = context.input
 
     -- 检查是否输入 /del
     if input == "/del" and env.initialized then
+        context:clear()       -- 清空输入内容，防止输入保留
         env.total_deleted = 0 -- 重置计数器
 
         pcall(trigger_sync_cleanup, env)
-        send_user_notification(env.total_deleted, env) -- 失败情况下会发送0
+        -- 失败情况下会发送 0
+        send_user_notification(env.total_deleted, env)
 
-        -- 清空输入内容，防止输入保留
-        context:clear()
         return 1 -- 返回 1 表示已处理该事件
     end
     return 2     -- 返回 2 继续处理其它输入
