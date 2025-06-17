@@ -7,10 +7,11 @@
 --     - lua_filter@*super_tips*M
 --     key_binder/tips_key: "slash"  #上屏按键配置
 local wanxiang = require("wanxiang")
+local rime = require("lib")
 local _db_pool = {} -- 数据库池
 -- 获取或创建 LevelDb 实例，避免重复打开
 local function wrapLevelDb(dbname, mode)
-    _db_pool[dbname] = _db_pool[dbname] or LevelDb(dbname)
+    _db_pool[dbname] = _db_pool[dbname] or rime.LevelDb(dbname)
     local db = _db_pool[dbname]
 
     local function close()
@@ -48,42 +49,19 @@ local function ensure_dir_exist(dir)
     end
 end
 
-local function db_update_producer(file)
-    return coroutine.wrap(function()
-        for line in file:lines() do
-            local value, key = line:match("([^\t]+)\t([^\t]+)")
-            if value and key then
-                coroutine.yield(key, value)
-            end
-        end
-    end)
-end
-
 local function sync_tips_db_from_file(db, path)
     local file = io.open(path, "r")
     if not file then return end
 
-    -- 使用协程迭代器
-    for key, value in db_update_producer(file) do
-        db:update(key, value)
+    for line in file:lines() do
+        local value, key = line:match("([^\t]+)\t([^\t]+)")
+        if value and key then
+            db:update(key, value)
+        end
     end
 
     file:close()
 end
-
--- local function sync_tips_db_from_file(db, path)
---     local file = io.open(path, "r")
---     if not file then return end
-
---     for line in file:lines() do
---         local value, key = line:match("([^\t]+)\t([^\t]+)")
---         if value and key then
---             db:update(key, value)
---         end
---     end
-
---     file:close()
--- end
 
 -- 获取文件内容哈希值，使用 FNV-1a 哈希算法
 local function calculate_file_hash(filepath)
@@ -124,7 +102,7 @@ local function file_exists(name)
     end
 end
 
-local function prune_tips_db(db)
+local function empty_tips_db(db)
     local da = db:query("")
     local count_before = 0
     for key, _ in da:iter() do
@@ -134,39 +112,34 @@ local function prune_tips_db(db)
     da = nil
 end
 
+local function get_preset_file_path()
+    local preset_path = "/lua/tips/tips_show.txt"
+    local preset_path_user = rime.api.get_user_data_dir() .. preset_path
+    local preset_path_shared = rime.api.get_shared_data_dir() .. preset_path
+
+    if file_exists(preset_path_user) then
+        return preset_path_user
+    end
+    return preset_path_shared
+end
+
 local function init_tips_userdb()
     local db, close_db = wrapLevelDb('lua/tips', true)
-
-    local user_data_dir = rime_api.get_user_data_dir()
-    local preset_path = "/lua/tips/tips_show.txt"
-    local preset_path_user = user_data_dir .. preset_path
-    local preset_path_shared = rime_api.get_shared_data_dir() .. preset_path
-
-    local preset_file_path = preset_path_shared
-    if file_exists(preset_path_user) then
-        preset_file_path = preset_path_user
-    end
-    local user_override_path = user_data_dir .. "/lua/tips/tips_user.txt"
-
-    local is_need_rebuild = false
-
     local hash_key = "__TIPS_FILE_HASH"
     local hash_in_db = db:fetch(hash_key)
 
-    local file_hash = calculate_file_hash(preset_file_path) .. "|" .. calculate_file_hash(user_override_path)
+    local preset_file_path = get_preset_file_path()
+    local user_override_path = rime.api.get_user_data_dir() .. "/lua/tips/tips_user.txt"
+    local file_hash = string.format("%s|%s",
+        calculate_file_hash(preset_file_path),
+        calculate_file_hash(user_override_path))
 
-    if not hash_in_db then
-        is_need_rebuild = true
-    else
-        is_need_rebuild = file_hash ~= hash_in_db
-    end
-
-    if not is_need_rebuild then
+    if hash_in_db == file_hash then
         close_db()
         return
     end
 
-    prune_tips_db(db)
+    empty_tips_db(db)
     db:update(hash_key, file_hash)
     sync_tips_db_from_file(db, preset_file_path)
     sync_tips_db_from_file(db, user_override_path)
@@ -175,14 +148,16 @@ end
 
 -- 初始化词典（写模式，把 txt 加载进 db）
 function M.init(env)
-    local dist = rime_api.get_distribution_code_name() or ""
-    local user_lua_dir = rime_api.get_user_data_dir() .. "/lua"
+    local dist = rime.api.get_distribution_code_name() or ""
+    local user_lua_dir = rime.api.get_user_data_dir() .. "/lua"
     if dist ~= "hamster" and dist ~= "Weasel" then
         ensure_dir_exist(user_lua_dir)
         ensure_dir_exist(user_lua_dir .. "/tips")
     end
 
+    local start = os.clock()
     init_tips_userdb()
+    rime.infof("[wanxiag/super_tips]: init_tips_userdb 共耗时 %s 秒", os.clock() - start)
 end
 
 -- 滤镜：设置提示内容
@@ -223,13 +198,13 @@ function M.func(input, env)
         end
         -- 输出候选
         for _, cand in ipairs(candidates) do
-            yield(cand)
+            rime.yield(cand)
         end
         -- 输出候选
     else
         -- 如果不是手机设备，直接输出候选，不进行数据库操作
         for cand in input:iter() do
-            yield(cand)
+            rime.yield(cand)
         end
     end
 end
@@ -281,7 +256,6 @@ function S.func(key, env)
     if (context:is_composing() or context:has_menu()) and S.tips_key and is_super_tips and
         ((tipspc and tipspc ~= "") or (tipsph and tipsph ~= "")) then
         local trigger = key:repr() == S.tips_key
-        local text = selected_cand and selected_cand.text or input_text
         if trigger then
             local formatted = (tipspc and (tipspc:match(".+：(.*)") or tipspc:match(".+:(.*)") or tips)) or
                 (tipsph and (tipsph:match("〔.+：(.*)〕") or tipsph:match("〔.+:(.*)〕"))) or ""

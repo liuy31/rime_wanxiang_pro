@@ -3896,7 +3896,7 @@ preset_keys:
   Up: { label: '↑', send: Up }
   Right: { label: '→', send: Right }
   select_all: { label: '☑', send: Control+a }
-  Clear: { label: 清除, text: '{Control+a}{BackSpace}' } #全选并删除
+  Clear1: { label: 清除, text: '{Control+a}{BackSpace}' } #全选并删除
   cut: { label: '✂', send: Control+x }
   cut_all: { label: 全挪, text: '{Control+a}{Control+x}' } #全选并剪切
   copy: { label: '❐', send: Control+c }
