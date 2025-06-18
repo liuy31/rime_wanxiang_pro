@@ -54,16 +54,20 @@ local function detect_os_type()
     return 'unknown'
 end
 
+local function trim(s)
+    return s:match("^%s*(.-)%s*$") or ""
+end
+
+local function startsWith(str, starts)
+    return string.sub(str, 1, string.len(starts)) == starts
+end
+
 -- 解析 installation.yaml 文件
 local function detect_yaml_installation()
-    local function trim(s)
-        return s:match("^%s*(.-)%s*$") or ""
-    end
-
     local yaml = {}
     local user_data_dir = rime.api.get_user_data_dir()
     local yaml_path = user_data_dir .. "/installation.yaml"
-    local file, err = io.open(yaml_path, "r")
+    local file, _ = io.open(yaml_path, "r")
     if not file then
         return yaml, "无法打开 installation.yaml 文件"
     end
@@ -169,7 +173,7 @@ end
 local function send_user_notification(deleted_count, env)
     if env.os_type == "windows" then
         local ansi_message = generate_ansi_message(deleted_count)
-        os.execute('start /B cmd /c msg * "' .. ansi_message .. '"')
+        os.execute('msg * "' .. ansi_message .. '"')
     elseif env.os_type == "linux" then
         local utf8_message = generate_utf8_message(deleted_count)
         os.execute('notify-send "' .. utf8_message .. '" "--app-name=万象输入法"')
@@ -182,71 +186,39 @@ local function send_user_notification(deleted_count, env)
     end
 end
 
--- 收集 path 目录下的目录，不含文件
-local function list_dirs(path, os_type)
-    local command = os_type == "windows" and ('dir "' .. path .. '" /AD /B 2>nul') or
-        ('ls -p "' .. path .. '" | grep / 2>/dev/null')
-    local handle = io.popen(command)
-    if not handle then
-        return nil, "无法遍历路径: " .. path
-    end
-
-    local dirs = {}
-    for dir in handle:lines() do
-        if dir:sub(-1) == "/" then
-            dir = dir:sub(1, -2)
-        end
-        local full_path = path .. "/" .. dir
-        full_path = convert_path_separator(full_path, os_type)
-        table.insert(dirs, full_path)
-    end
-    handle:close()
-    return dirs, nil
-end
-
-
 -- 删除 installation.yaml 同级目录下的 .userdb 文件夹
 local function process_userdb_folders(env)
     local user_data_dir = rime.api.get_user_data_dir()
-    local dirs, _ = list_dirs(user_data_dir, env.os_type)
 
-    if not dirs then
-        return
+    -- 遍历文件夹，删除以 .userdb 结尾的文件夹下的所有数据库文件
+    local command = string.format('find "%s"/*.userdb/ -maxdepth 1 -mindepth 1 -type f 2>/dev/null',
+        user_data_dir)
+    local os_is_windows = env.os_type == "windows"
+    if os_is_windows then
+        command = string.format(
+            'for /f "tokens=*" %%G in (\'dir "%s"\\*.userdb /AD /B\') do dir "%s\\%%G" /A-D /B /S 2>nul',
+            user_data_dir, user_data_dir)
     end
 
-    local rm_dirs = {}
-    -- 遍历文件夹，删除以 .userdb 结尾的文件夹
-    for _, dir in ipairs(dirs) do
-        if dir:match("%.userdb$") then
-            table.insert(rm_dirs, dir)
+    local handle = io.popen(command)
+    if not handle then return end
+
+    -- rime.warnf("[wanxiang/userdb_sync_delete/process_userdb_folders]\n\tcmd: %s", command)
+
+    local output = handle:read("*a") -- 一次性读取全部内容以尽快释放句柄
+    handle:close()
+    if not output then return end
+
+    -- rime.warnf("[wanxiang/userdb_sync_delete/process_userdb_folders]\n\toutput: %s", output)
+    -- 然后处理收集到的行
+    for line in output:gmatch("[^\r\n]+") do
+        if startsWith(line, user_data_dir) then
+            local success, err = os.remove(line)
+            if not success then
+                rime.warnf("清理 userdb 文件夹出错：%s。", err)
+            end
         end
     end
-
-    local cmd = string.format('rm -rf %s', table.concat(rm_dirs, " "))
-    if env.os_type == "windows" then
-        cmd = string.format('start /B cmd /c rmdir /S /Q %s', table.concat(rm_dirs, " "))
-    end
-    os.execute(cmd)
-end
-
-
--- 收集 path 目录下的文件，不含目录
-local function list_files(path, os_type)
-    local command = os_type == "windows" and ('dir "' .. path .. '" /A-D /B 2>nul') or
-        ('ls -p "' .. path .. '" | grep -v / 2>/dev/null')
-    local handle = io.popen(command)
-    if not handle then
-        return nil, "无法遍历路径: " .. path
-    end
-
-    local files = {}
-    for file in handle:lines() do
-        local full_path = path .. "/" .. file
-        full_path = convert_path_separator(full_path, os_type)
-        table.insert(files, full_path)
-    end
-    handle:close()
-    return files, nil
 end
 
 -- 处理 .userdb.txt 文件并删除 c < 0 条目的函数
@@ -289,18 +261,24 @@ end
 -- 处理 .userdb.txt 文件并删除 c <= 0 条目
 local function process_userdb_files(env)
     local sync_path, _ = get_sync_path_from_yaml(env)
-    if not sync_path then
-        return
-    end
+    if not sync_path then return end
 
-    local files, _ = list_files(sync_path, env.os_type)
-    if not files then
-        return
-    end
+    local command = env.os_type == "windows"
+        and (string.format("dir %s\\*.userdb.txt /A-D /B /S 2>nul", sync_path))
+        or (string.format("find %s/ -maxdepth 1 -mindepth 1 -type f -name '*.userdb.txt' 2>/dev/null", sync_path))
 
-    for _, file in ipairs(files) do
-        if file:match("%.userdb%.txt$") then
-            clean_userdb_file(file, env)
+    local handle = io.popen(command)
+    if not handle then return end
+
+    local output = handle:read("*a") -- 一次性读取全部内容以尽快释放句柄
+    handle:close()
+    if not output then return end
+
+    -- rime.warnf("[wanxiang/userdb_sync_delete/process_userdb_files] output: %s", output)
+    -- 然后处理收集到的行
+    for line in output:gmatch("[^\r\n]+") do
+        if startsWith(line, sync_path) then
+            pcall(clean_userdb_file, line, env)
         end
     end
 end
@@ -312,7 +290,7 @@ local function trigger_sync_cleanup(env)
 end
 
 -- 捕获输入并执行相应的操作
-local function UserDictCleaner_process(key_event, env)
+local function UserDictCleaner_process(_, env)
     local context = env.engine.context
     local input = context.input
 
