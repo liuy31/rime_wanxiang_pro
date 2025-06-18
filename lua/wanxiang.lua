@@ -24,8 +24,8 @@ function M.is_mobile_device()
        lower_path:find("/sdcard/") or 
        lower_path:find("/data/storage/") or
        lower_path:find("/storage/emulated/") or
-       lower_path:find("Applications") or
-       lower_path:find("Library") then
+       lower_path:find("applications") or
+       lower_path:find("library") then
         return true
     end
     
