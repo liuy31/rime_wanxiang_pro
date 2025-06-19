@@ -1,11 +1,12 @@
 -- backspace_limiter.lua
 -- 防止连续 Backspace 在编码为空时删除已上屏内容，虽然我更推荐拍下esc。
+-- 这个功能依赖按键事件的处理,运行逻辑的问题在手机上无法得到好的效果,其中macOS特非常特殊,它的按键事件等同于手机逻辑,因此手机和Mac都屏蔽了这一功能
 -- @author amzxyz
 local M = {}
 local ACCEPT, PASS = 1, 2
 
 -- 引入移动设备检测模块
-local mobile_detector = require("wanxiang")
+local wanxiang = require("wanxiang")
 
 -- 状态标志说明:
 -- env.prev_input_len: 上一次按键前的输入长度
@@ -32,7 +33,7 @@ function M.func(key, env)
     -- 处于连续 Backspace 序列中
     if env.bs_sequence then
         -- 移动设备由于运行逻辑的问题不能实现友好的逻辑
-        if mobile_detector.is_mobile_device() then
+        if wanxiang.is_mobile_device() then
             return PASS -- 直接放行
             -- PC设备保持原有逻辑：长度1变0时拦截
         else
