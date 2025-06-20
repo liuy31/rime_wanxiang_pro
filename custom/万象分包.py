@@ -100,16 +100,16 @@ if __name__ == "__main__":
 
     # 你可能有一批 start_index、end_index 对照表，这里仅示意
     index_mapping = [
-        (1, 2, "moqi_dicts"),
-        (2, 3, "flypy_dicts"),
-        (3, 4, "zrm_dicts"),
-        (4, 5, "jdh_dicts"),
-        (5, 6, "tiger_dicts"),
-        (6, 7, "wubi_dicts"),
-        (7, None, "hanxin_dicts")  # 7 到末尾
+        (1, 2, "pro-moqi-fuzhu-dicts"),
+        (2, 3, "pro-flypy-fuzhu-dicts"),
+        (3, 4, "pro-zrm-fuzhu-dicts"),
+        (4, 5, "pro-jdh-fuzhu-dicts"),
+        (5, 6, "pro-tiger-fuzhu-dicts"),
+        (6, 7, "pro-wubi-fuzhu-dicts"),
+        (7, None, "pro-hanxin-fuzhu-dicts")  # 7 到末尾
     ]
 
-    input_dir = 'cn_dicts'
+    input_dir = 'zh_dicts_pro'
 
     for start_idx, end_idx, out_dir in index_mapping:
         process_rime_dicts(
