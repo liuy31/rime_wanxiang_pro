@@ -1,6 +1,0 @@
-# Rime user dictionary
-#@/db_name	zc
-#@/db_type	userdb
-#@/rime_version	1.12.0
-#@/tick	0
-#@/user_id	ca1aac69-58e4-4842-95d1-742398200e02
