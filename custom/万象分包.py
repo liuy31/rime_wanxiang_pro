@@ -109,7 +109,7 @@ if __name__ == "__main__":
         (7, None, "hanxin_dicts")  # 7 到末尾
     ]
 
-    input_dir = 'cn_dicts'
+    input_dir = 'zh_dicts_pro'
 
     for start_idx, end_idx, out_dir in index_mapping:
         process_rime_dicts(
