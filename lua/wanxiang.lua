@@ -1,9 +1,19 @@
+---@diagnostic disable: undefined-global
+
+-- 全局内容
+RIME_PROCESS_RESULTS = {
+    kRejected = 0,
+    kAccepted = 1,
+    kNoop = 2,
+}
+
+-- 万象的一些共用工具函数
+local wanxiang = {}
 
 -- 提供跨平台设备检测功能
 -- @author amzxyz
-local M = {}
 -- 判断是否为手机设备（返回布尔值）
-function M.is_mobile_device()
+function wanxiang.is_mobile_device()
     local dist = rime_api.get_distribution_code_name() or ""
     local user_data_dir = rime_api.get_user_data_dir() or ""
     local sys_dir = rime_api.get_shared_data_dir() or ""
@@ -12,25 +22,25 @@ function M.is_mobile_device()
     local lower_path = user_data_dir:lower()
     local sys_lower_path = sys_dir:lower()
     -- 主判断：常见移动端输入法
-    if lower_dist == "trime" or 
-       lower_dist == "hamster" or 
-       lower_dist == "squirrel" then
+    if lower_dist == "trime" or
+        lower_dist == "hamster" or
+        lower_dist == "squirrel" then
         return true
     end
-    
+
     -- 补充判断：路径中包含移动设备特征，很可以mac的运行逻辑和手机一球样
-    if lower_path:find("/android/") or 
-       lower_path:find("/mobile/") or 
-       lower_path:find("/sdcard/") or 
-       lower_path:find("/data/storage/") or
-       lower_path:find("/storage/emulated/") or
-       lower_path:find("applications") or
-       lower_path:find("library") then
+    if lower_path:find("/android/") or
+        lower_path:find("/mobile/") or
+        lower_path:find("/sdcard/") or
+        lower_path:find("/data/storage/") or
+        lower_path:find("/storage/emulated/") or
+        lower_path:find("applications") or
+        lower_path:find("library") then
         return true
     end
     -- 补充判断：路径中包含移动设备特征，很可以mac的运行逻辑和手机一球样
-    if sys_lower_path:find("applications") or 
-       sys_lower_path:find("library") then
+    if sys_lower_path:find("applications") or
+        sys_lower_path:find("library") then
         return true
     end
     -- 特定平台判断（Android/Linux）
@@ -40,8 +50,47 @@ function M.is_mobile_device()
             return true
         end
     end
-    
+
     -- 所有检查未通过则默认为桌面设备
     return false
 end
-return M
+
+--- 检测是否为万象专业版
+---@param env Env
+---@return boolean
+function wanxiang.is_pro_scheme(env)
+    return env.engine.schema.schema_name == "wanxiang_pro"
+end
+
+-- 以 `tag` 方式检测是否处于反查模式
+function wanxiang.is_in_radical_mode(env)
+    local seg = env.engine.context.composition:back()
+    return seg and (
+        seg:has_tag("radical_lookup")
+        or seg:has_tag("reverse_stroke")
+        or seg:has_tag("add_user_dict")
+    ) or false
+end
+
+-- 按照优先顺序加载文件：用户目录 > 系统目录
+---@param path string 相对路径
+---@retur file*, function
+function wanxiang.load_file_with_fallback(path, mode)
+    local _path = path:gsub("^/+", "") -- 去掉开头的斜杠
+    local user_path = rime_api.get_user_data_dir() .. '/' .. _path
+    local shared_path = rime_api.get_shared_data_dir() .. '/' .. _path
+
+    mode = mode or "r" -- 默认读取模式
+    local file, err = io.open(user_path, mode)
+    if not file then
+        file, err = io.open(shared_path, mode)
+    end
+
+    local function close()
+        if file then file:close() end
+    end
+
+    return file, close, err
+end
+
+return wanxiang

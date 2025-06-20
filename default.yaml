@@ -8,7 +8,8 @@ config_version: '2024-08-05'
 
 # 方案列表
 schema_list:
-  - schema: wanxiang          # 自然码双拼
+  - schema: wanxiang
+  - schema: wanxiang_pro
 
 
 # 菜单
